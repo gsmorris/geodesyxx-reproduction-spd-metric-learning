@@ -1,0 +1,222 @@
+# Phase 4 Local Geometric Learning Configuration
+# DistilBERT + CoLA Reproduction Settings
+# Expected Results: Condition numbers >171,000, negligible MCC improvement (<0.01)
+
+experiment_name: "local_curved_attention_phase4"
+phase: "4"
+description: "Local SPD-weighted attention in DistilBERT layers with CoLA evaluation"
+
+# Random seeds for reproducibility
+seeds: [42, 123, 456]
+
+# Model Configuration
+model:
+  name: "distilbert"
+  base_model: "distilbert-base-uncased"
+  architecture:
+    layers: 6
+    hidden_size: 768
+    num_attention_heads: 12
+    intermediate_size: 3072
+  
+  # Curved Attention Settings
+  curved_attention:
+    enabled: true
+    curved_layers: [1, 2]  # Which layers get SPD attention (0-indexed)
+    standard_layers: [0, 3, 4, 5]  # Remain standard attention
+    
+    # Geometry Configuration  
+    geometry_modes: ["shared", "per_head"]  # Test both modes
+    
+    # SPD Factorization
+    spd_settings:
+      rank: 16  # A ∈ R^(16×64) factorization
+      head_dim: 64  # 768/12 heads
+      epsilon: 1e-6  # A^T A + εI regularization
+      max_condition_number: 1e6  # Allow high condition numbers
+      
+    # Parameter Counts (for validation)
+    expected_params:
+      shared_mode: 2048  # 2 layers × 1024 params/layer
+      per_head_mode: 24576  # 2 layers × 12 heads × 1024 params/head
+      single_head: 1024  # rank=16 × head_dim=64
+
+# Task Configuration - CoLA
+task:
+  name: "cola"
+  dataset: "glue"
+  subset: "cola"
+  description: "Corpus of Linguistic Acceptability"
+  
+  # Evaluation Metric
+  primary_metric: "matthews_correlation"  # MCC for CoLA
+  secondary_metrics: ["accuracy", "f1"]
+  
+  # Expected Performance
+  expected_results:
+    baseline_mcc: 0.505  # Typical DistilBERT-base performance
+    improvement_threshold: 0.01  # Minimum meaningful improvement
+    expected_improvement: 0.005  # Paper's observed negligible improvement
+    
+# Data Configuration
+data:
+  max_seq_length: 128
+  truncation: true
+  padding: "max_length"
+  
+  # Batch Sizes
+  train_batch_size: 16  # Paper specification
+  eval_batch_size: 32
+  
+  # Data Splits
+  use_train_split: true
+  use_validation_split: true
+  validation_size: 0.1  # If no predefined validation set
+
+# Training Configuration
+training:
+  # Dual Optimizer Setup
+  dual_optimizers: true
+  
+  # Learning Rates (Phase 4 specification)
+  geometric_lr: 1e-4  # SPD parameters
+  standard_lr: 1e-5   # Standard parameters
+  
+  # Standard Training Settings
+  num_epochs: 10
+  weight_decay: 1e-4
+  warmup_steps: 100
+  
+  # Early Stopping
+  early_stopping:
+    enabled: true
+    patience: 3  # Paper specification
+    min_delta: 1e-4
+    monitor: "validation_mcc"
+    mode: "max"
+  
+  # Gradient Settings
+  gradient_clipping:
+    enabled: true
+    max_norm: 1.0
+  
+  # Stability Monitoring
+  stability_checks:
+    frequency: 5  # Every 5 steps
+    nan_detection: true
+    inf_detection: true
+    condition_monitoring: true
+
+# Statistical Analysis Configuration
+statistics:
+  # Hypothesis Testing
+  hypotheses:
+    h1_local_success: "Local geometry significantly outperforms baseline"
+    h2_no_benefit: "No significant difference (negative result)"
+    h3_task_specific: "Mixed results across different configurations"
+  
+  # Statistical Settings
+  bonferroni_correction: true
+  alpha: 0.05
+  alpha_corrected: 0.017  # 0.05/3 primary comparisons
+  confidence_level: 0.95
+  
+  # Effect Size Analysis
+  effect_sizes:
+    cohens_d_threshold: 0.2  # Practical significance
+    bootstrap_iterations: 1000
+    bootstrap_seed: 42
+  
+  # Aggregation Strategy
+  aggregation:
+    unit_of_analysis: "seed"  # Aggregate across seeds
+    n_seeds: 3
+    reporting: "mean_ci"  # Report mean ± 95% CI
+
+# Representative Sample Configuration
+representative_sample:
+  enabled: true  # Alternative to full benchmark
+  description: "Strategic 7-experiment sample for computational efficiency"
+  
+  experiments:
+    # CoLA experiments
+    - {task: "cola", geometry: "none", layers: [], seed: 42}
+    - {task: "cola", geometry: "shared", layers: [1], seed: 42}  
+    - {task: "cola", geometry: "per_head", layers: [1], seed: 42}
+    
+    # Additional task coverage (if computational budget allows)
+    - {task: "cola", geometry: "none", layers: [], seed: 123}
+    - {task: "cola", geometry: "shared", layers: [1, 2], seed: 123}
+    - {task: "cola", geometry: "per_head", layers: [2], seed: 123}
+    - {task: "cola", geometry: "shared", layers: [1], seed: 456}
+  
+  estimated_runtime: "2-3 hours"
+  
+# Hardware Configuration
+hardware:
+  # Device Preferences
+  device_preference: ["mps", "cuda", "cpu"]
+  cpu_fallback: true
+  
+  # Memory Management
+  memory_limit_gb: 8.0
+  memory_monitoring: true
+  adaptive_batch_sizing: true
+  
+  # Apple M2 Pro Specifications (reference)
+  reference_hardware:
+    device: "Apple M2 Pro"
+    memory: "32GB unified"
+    expected_memory_usage: "1.4GB peak"
+    expected_overhead: "1.02x baseline"
+
+# Expected Results (for validation)
+expected_results:
+  # Condition Numbers
+  condition_numbers:
+    baseline: 1.0  # Identity matrix
+    shared_geometry: [100000, 200000]  # >100K range
+    per_head_geometry: [150000, 250000]  # Even higher
+    paper_maximum: 171369  # From representative sample
+  
+  # Performance Results
+  performance:
+    baseline_accuracy: 0.505
+    geometric_improvement: 0.005  # 0.5 percentage points
+    statistical_significance: false
+    effect_size_range: [0.0, 0.05]  # Negligible Cohen's d
+  
+  # Training Dynamics
+  training:
+    convergence_epochs: [3, 7]
+    memory_overhead: [1.0, 2.0]  # 1x to 2x baseline
+    training_time_multiplier: [2, 5]  # 2x-5x slower than baseline
+
+# Output Configuration  
+output:
+  results_dir: "results/phase4"
+  experiment_logs: true
+  model_checkpoints: true
+  statistical_reports: true
+  
+  # Result Files
+  save_files:
+    - "condition_numbers.json"
+    - "performance_metrics.json" 
+    - "statistical_analysis.json"
+    - "final_report.md"
+    - "parameter_breakdown.json"
+
+# Debugging and Development
+debug:
+  enabled: false
+  quick_mode: false  # Use full training
+  sample_data: false  # Use full CoLA dataset
+  mock_model: false  # Use real DistilBERT
+  
+  # Development Overrides
+  dev_overrides:
+    max_epochs: 2
+    train_batch_size: 4
+    eval_batch_size: 8
+    early_stopping_patience: 1

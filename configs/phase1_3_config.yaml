@@ -1,0 +1,121 @@
+# Phase 1-3 Global Metric Learning Configuration
+# Geodesyxx Paper Reproduction Settings
+# Expected Results: Condition numbers 18-40, performance degradation
+
+experiment_name: "global_metric_learning_phase1_3"
+phase: "1-3"
+description: "Global SPD metric learning on GloVe embeddings with WordSim353 and WordNet evaluation"
+
+# Random seeds for reproducibility
+seeds: [42, 123, 456]
+
+# Synthetic Validation (Phase 1)
+synthetic_validation:
+  enabled: true
+  dimension: 10
+  n_samples: 200
+  true_eigenvalues: [9.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+  n_triplets: 6000
+  margin: 1.0
+  n_epochs: 200
+  learning_rate: 0.01
+  target_correlation: 0.99
+  rank: 10  # Full rank for synthetic
+
+# Embeddings Configuration
+embeddings:
+  name: "glove"
+  dimension: 300
+  source: "glove.6B.300d"  # Standard GloVe vectors
+  preprocessing:
+    frozen: true  # Don't update embedding vectors
+    l2_normalize: true  # L2 normalize all embeddings
+    lowercase: true
+  
+# Global SPD Metric Settings
+global_metric:
+  embedding_dim: 300
+  rank: 50  # Low-rank factorization A ∈ R^(50×300)
+  epsilon: 1e-6  # A^T A + εI regularization
+  max_condition_number: 100  # Target condition number range
+  initialization: "normal"
+  std: 0.01
+
+# WordSim353 Evaluation
+wordsim353:
+  enabled: true
+  dataset_path: "data/wordsim353/combined.csv"
+  evaluation_metric: "spearman"
+  description: "353 word pairs with human similarity ratings"
+  expected_baseline: 0.65  # Typical GloVe performance
+  expected_degradation: true  # Expect performance drop with global SPD
+
+# WordNet Evaluation  
+wordnet:
+  enabled: true
+  n_pairs: 1751
+  path_lengths: [1, 2, 3, 4]  # Shortest path distances
+  evaluation_metric: "spearman"
+  description: "Hypernym pairs with path-based distances"
+  expected_correlation: 0.45  # Baseline embedding-distance correlation
+  
+# Training Configuration
+training:
+  optimizer: "adam"
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+  batch_size: 512
+  max_epochs: 30
+  
+  # Triplet Loss Settings
+  triplet_loss:
+    margin: 1.0
+    hard_negative_mining: true
+    mining_strategy: "hard"  # Select hardest negatives
+    
+  # Early Stopping
+  early_stopping:
+    enabled: true
+    patience: 5
+    min_delta: 1e-4
+    monitor: "validation_loss"
+    mode: "min"
+
+# Statistical Analysis
+statistics:
+  bootstrap_iterations: 1000
+  confidence_level: 0.95
+  bonferroni_correction: true
+  alpha_corrected: 0.017  # 0.05/3 comparisons
+  effect_size_threshold: 0.2  # Cohen's d practical significance
+  
+# Hardware and Performance
+hardware:
+  device_preference: ["cuda", "mps", "cpu"]
+  memory_limit_gb: 8.0
+  cpu_fallback: true
+  numerical_precision: "float32"
+  
+# Expected Results (for validation)
+expected_results:
+  condition_numbers:
+    range: [18, 40]
+    typical: 25
+  performance_change:
+    wordsim353: -0.05  # Expected degradation
+    wordnet: -0.03
+  convergence_epochs: 20
+  
+# Output Configuration
+output:
+  results_dir: "results/phase1_3"
+  save_checkpoints: true
+  log_frequency: 10
+  plot_results: true
+  
+# Debugging
+debug:
+  enabled: false
+  sample_data: false  # Use full datasets
+  quick_mode: false  # Full training
+  verbose_logging: true

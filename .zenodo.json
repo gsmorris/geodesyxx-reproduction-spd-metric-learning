@@ -1,0 +1,38 @@
+{
+  "title": "Geodesyxx: Reproduction Package for SPD Metric Learning in Semantic NLP",
+  "description": "Complete reproduction package for the paper 'When Mahalanobis Isn't Enough: Negative Results for SPD Metric Learning in Semantic NLP'. This package demonstrates that despite achieving extreme geometric exploration (condition numbers >171,000), SPD-based metric learning provides no meaningful semantic benefits.",
+  "creators": [
+    {
+      "name": "Author Names",
+      "affiliation": "Institution"
+    }
+  ],
+  "keywords": [
+    "metric learning",
+    "SPD matrices",
+    "Mahalanobis distance", 
+    "transformer models",
+    "negative results",
+    "semantic NLP",
+    "DistilBERT",
+    "geometric deep learning",
+    "reproducibility"
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "version": "1.0.0",
+  "language": "en",
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "https://arxiv.org/abs/XXXX.XXXXX",
+      "resource_type": "publication-article",
+      "scheme": "url"
+    }
+  ],
+  "grants": [
+    {
+      "id": "funding-info-here"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+title: 'Geodesyxx: Reproduction Package for SPD Metric Learning in Semantic NLP'
+message: 'If you use this software, please cite it as below.'
+type: software
+authors:
+  - family-names: 'Author'
+    given-names: 'Names'
+    orcid: 'https://orcid.org/0000-0000-0000-0000'
+repository-code: 'https://github.com/gsmorris/geodesyxx-reproduction-spd-metric-learning'
+abstract: >-
+  Complete reproduction package for the paper "When Mahalanobis Isn't Enough: 
+  Negative Results for SPD Metric Learning in Semantic NLP". This package 
+  demonstrates that despite achieving extreme geometric exploration (condition 
+  numbers >171,000), SPD-based metric learning provides no meaningful semantic 
+  benefits. The package includes comprehensive validation showing >99% synthetic 
+  eigenvalue recovery while consistently failing to improve on semantic tasks.
+keywords:
+  - metric learning
+  - SPD matrices
+  - Mahalanobis distance
+  - transformer models
+  - negative results
+  - semantic NLP
+  - DistilBERT
+  - geometric deep learning
+  - reproducibility
+license: MIT
+version: 1.0.0
+date-released: '2024-08-29'
+preferred-citation:
+  type: article
+  title: 'When Mahalanobis Isn''t Enough: Negative Results for SPD Metric Learning in Semantic NLP'
+  authors:
+    - family-names: 'Author'
+      given-names: 'Names'
+  journal: 'International Conference on Learning Representations (ICLR)'
+  year: 2024
