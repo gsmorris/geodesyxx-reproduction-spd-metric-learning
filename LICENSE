@@ -27,15 +27,16 @@ Academic Use Notice:
 This reproduction package accompanies the paper "When Mahalanobis Isn't Enough: 
 Negative Results for SPD Metric Learning in Semantic NLP" published at ICLR 2024.
 
-If you use this code or data in academic research, please cite:
+If you use this package in your research, please cite:
 
+```bibtex
 @inproceedings{geodesyxx2024,
   title={When Mahalanobis Isn't Enough: Negative Results for SPD Metric Learning in Semantic NLP},
   author={[Authors]},
   booktitle={International Conference on Learning Representations (ICLR)},
   year={2024},
-  url={https://github.com/[username]/geodesyxx-reproduction}
+  url={https://github.com/gsmorris/geodesyxx-reproduction-spd-metric-learning}
 }
+```
 
-The negative results presented in this package are scientifically valuable and 
-should be properly attributed when referenced or built upon.
+The negative results presented in this package are scientifically valuable and should be properly attributed when referenced or built upon.
